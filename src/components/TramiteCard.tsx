@@ -5,13 +5,17 @@ import { colors } from '../theme/colors';
 type Props = {
   nombre: string;
   onPress: () => void;
+  icon?: string;
 };
 
-export default function TramiteCard({ nombre, onPress }: Props) {
+export default function TramiteCard({ nombre, onPress, icon }: Props) {
   return (
     <View style={cardStyles.container}>
       <View style={cardStyles.left}>
-        <View style={cardStyles.iconPlaceholder} />
+        <View style={cardStyles.iconPlaceholder}>
+          {/* icon passed as emoji */}
+          <Text style={cardStyles.iconText}>{icon || '🔷'}</Text>
+        </View>
       </View>
 
       <View style={cardStyles.body}>
@@ -44,6 +48,11 @@ const cardStyles = StyleSheet.create({
     height: 48,
     borderRadius: 10,
     backgroundColor: '#eef6ff',
+  },
+  iconText: {
+    textAlign: 'center',
+    lineHeight: 48,
+    fontSize: 22,
   },
   body: {
     flex: 1,

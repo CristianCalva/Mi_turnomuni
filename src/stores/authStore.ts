@@ -5,6 +5,8 @@ export type User = {
   nombre: string;
   email: string;
   rol: string;
+  telefono?: string;
+  ventanillaId?: string; // para funcionarios: ventanilla/oficina asignada
 };
 
 interface AuthState {
@@ -13,6 +15,7 @@ interface AuthState {
   isAuthenticated: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
+  updateProfile: (updates: Partial<User>) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -25,4 +28,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () =>
     set({ token: null, user: null, isAuthenticated: false }),
+  updateProfile: (updates: Partial<User>) =>
+    set((state) => ({ user: state.user ? { ...state.user, ...updates } : state.user })),
 }));

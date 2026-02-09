@@ -11,6 +11,10 @@ export type Turno = {
   tramite: string;
   fecha: string;
   hora: string;
+  numero?: number;
+  estado?: 'PENDIENTE' | 'CONFIRMADO' | 'COMPLETADO' | 'CANCELADO';
+  propietarioId?: string; // id del ciudadano propietario del turno
+  ventanillaId?: string; // id de la ventanilla/oficina asignada (si aplica)
 };
 
 /* =======================
@@ -21,6 +25,8 @@ type TurnosState = {
   turnos: Turno[];
   agregarTurno: (turno: Turno) => void;
   cancelarTurno: (id: string) => void;
+  actualizarTurno: (id: string, patch: Partial<Turno>) => void;
+  setTurnos: (turnos: Turno[]) => void;
 };
 
 /* =======================
@@ -37,8 +43,13 @@ export const useTurnosStore = create<TurnosState>()(
         })),
       cancelarTurno: (id) =>
         set((state) => ({
-          turnos: state.turnos.filter((t) => t.id !== id),
+          turnos: state.turnos.map((t) => (t.id === id ? { ...t, estado: 'CANCELADO' } : t)),
         })),
+      actualizarTurno: (id, patch) =>
+        set((state) => ({
+          turnos: state.turnos.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+        })),
+      setTurnos: (turnos) => set(() => ({ turnos })),
     }),
     {
       name: 'turnos-storage',

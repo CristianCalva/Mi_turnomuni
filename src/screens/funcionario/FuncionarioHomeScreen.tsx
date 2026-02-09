@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Button } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../stores/authStore';
 import { useEffect } from 'react';
@@ -18,22 +18,19 @@ export default function FuncionarioHomeScreen() {
       navigation.reset?.({ index: 0, routes: [{ name: 'Login' }] });
     }
   }, [user]);
+  
+  useEffect(() => {
+    // Si el usuario es funcionario, redirigir automáticamente al dashboard
+    if (user && user.rol === 'FUNCIONARIO') {
+      // @ts-ignore
+      navigation.navigate?.('FuncionarioDashboard');
+    }
+  }, [user]);
 
   return (
-    <View style={[styles.container, { justifyContent: 'center' }]}>
-      <View style={{ backgroundColor: '#fff', padding: 20, borderRadius: 12, elevation: 2 }}>
-        <Text style={styles.headingLarge}>Panel Funcionario</Text>
-        <Text style={{ marginBottom: 16 }}>Bienvenido funcionario {user?.nombre}</Text>
-
-        <Button
-          title="Gestionar Turnos"
-          onPress={() => navigation.navigate('GestionTurnos' as never)}
-        />
-
-        <View style={{ marginTop: 20 }}>
-          <Button title="Cerrar sesión" color="red" onPress={logout} />
-        </View>
-      </View>
+    <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <ActivityIndicator size="large" style={{ marginBottom: 12 }} />
+      <Text style={{ color: '#666' }}>Abriendo panel...</Text>
     </View>
   );
 }

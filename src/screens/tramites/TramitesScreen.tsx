@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { View, Text, SectionList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { tramites } from '../../data/tramites';
+import { categorias } from '../../data/tramites';
 import { styles } from '../../theme/styles';
 import TramiteCard from '../../components/TramiteCard';
 import { useAuthStore } from '../../stores/authStore';
@@ -13,17 +13,20 @@ export default function TramitesScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.headingLarge}>Trámites disponibles</Text>
-
-      <FlatList
-        data={tramites}
+      <SectionList
+        sections={categorias.map((c) => ({ ...c, data: c.items }))}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TramiteCard
             nombre={item.nombre}
+            icon={item.icon}
             onPress={() => navigateOrAuth(navigation, isAuthenticated, 'AgendarTurno', { tramite: item })}
           />
         )}
+        renderSectionHeader={({ section: { title } }) => (
+          <Text style={styles.sectionHeader}>{title}</Text>
+        )}
+        contentContainerStyle={{ paddingBottom: 24 }}
       />
     </View>
   );

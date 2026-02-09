@@ -20,7 +20,7 @@ export default function LandingHero({ onCTAPress }: Props) {
       <View style={styles.content}>
         <Text style={styles.brand}>MiTurnoMuni</Text>
         <Text style={styles.heading}>Agenda tu turno
-sin salir de casa</Text>
+      sin salir de casa</Text>
         <Text style={styles.subtitle}>Sistema digital de agendamiento para trámites municipales. Rápido y disponible 24/7</Text>
 
         <TouchableOpacity style={styles.cta} activeOpacity={0.85} onPress={onCTAPress}>
