@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Animated } from 'react-native';
 import {
   View,
   Text,
@@ -8,6 +9,16 @@ import {
   Alert,
   ScrollView,
 } from 'react-native';
+
+// safe Ionicons import (used elsewhere)
+let Ionicons: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  Ionicons = require('@expo/vector-icons').Ionicons;
+} catch (e) {
+  Ionicons = null;
+}
+// Onboarding removed
 import { styles } from '../../theme/styles';
 import { useAuthStore } from '../../stores/authStore';
 
@@ -49,79 +60,92 @@ export default function ProfileScreen() {
     Alert.alert('Solicitud enviada', 'Funcionalidad pendiente de integración con backend.');
   };
 
+  const fade = React.useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fade, { toValue: 1, duration: 400, useNativeDriver: true }).start();
+  }, [fade]);
+
   return (
-    <ScrollView contentContainerStyle={[styles.container, { padding: 16 }]}>
-      <View style={{ alignItems: 'center', marginBottom: 16 }}>
+    <ScrollView contentContainerStyle={[styles.container, { padding: 16 }]}> 
+      <Animated.View style={[styles.profileCard, { alignItems: 'center', opacity: fade, transform: [{ translateY: fade.interpolate({ inputRange: [0, 1], outputRange: [8, 0] }) }] }]}> 
         <View style={styles.profileAvatar}>
           <Text style={{ fontSize: 32, fontWeight: '700' }}>{initials}</Text>
         </View>
         <Text style={styles.profileName}>{user?.nombre ?? 'Usuario'}</Text>
-        <Text style={{ color: '#666', marginBottom: 12 }}>{user?.email}</Text>
-      </View>
+        <Text style={{ color: '#666', marginBottom: 8 }}>{user?.email}</Text>
 
-      {editing ? (
-        <View>
-          <TextInput
-            style={styles.profileField}
-            value={nombre}
-            onChangeText={setNombre}
-            placeholder="Nombre"
-          />
-          <TextInput
-            style={styles.profileField}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Email"
-            keyboardType="email-address"
-          />
-          <TextInput
-            style={styles.profileField}
-            value={telefono}
-            onChangeText={setTelefono}
-            placeholder="Teléfono"
-            keyboardType="phone-pad"
-          />
+        {!editing ? (
+          <View style={{ width: '100%' }}>
+            <View style={styles.profileInfoRow}>
+              <Text style={styles.profileInfoLabel}>Email</Text>
+              <Text style={styles.profileInfoValue}>{user?.email ?? '-'}</Text>
+            </View>
+            <View style={styles.profileInfoRow}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {Ionicons ? <Ionicons name="call-outline" size={16} color="#6b6b6b" style={{ marginRight: 8 }} /> : <Text style={{ marginRight: 8 }}>📞</Text>}
+                <Text style={styles.profileInfoLabel}>Teléfono</Text>
+              </View>
+              <Text style={styles.profileInfoValue}>{user?.telefono ?? '-'}</Text>
+            </View>
 
-          <TouchableOpacity
-            onPress={() => {
-              setEditing(false);
-              setNombre(user?.nombre ?? '');
-              setEmail(user?.email ?? '');
-              setTelefono(user?.telefono ?? '');
-            }}
-            style={styles.secondaryButtonGreen}
-          >
-            <Text style={styles.secondaryButtonText}>Cancelar</Text>
-          </TouchableOpacity>
+            <View style={styles.profileActions}>
+              <TouchableOpacity onPress={() => setEditing(true)} style={[styles.profileButton, styles.profileButtonPrimary]}>
+                <Text style={styles.profileButtonText}>Editar</Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity onPress={onSave} style={[styles.primaryButton, { marginTop: 12 }]}>
-            <Text style={styles.primaryButtonText}>Guardar</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View>
-          <View style={{ marginBottom: 12 }}>
-            <Text style={{ fontWeight: '700' }}>Nombre</Text>
-            <Text style={{ marginBottom: 8 }}>{user?.nombre ?? '-'}</Text>
-            <Text style={{ fontWeight: '700' }}>Email</Text>
-            <Text style={{ marginBottom: 8 }}>{user?.email ?? '-'}</Text>
-            <Text style={{ fontWeight: '700' }}>Teléfono</Text>
-            <Text style={{ marginBottom: 8 }}>{user?.telefono ?? '-'}</Text>
+              <TouchableOpacity onPress={() => setPwdModalVisible(true)} style={[styles.profileButton, styles.profileButtonSecondary, { marginLeft: 8 }]}> 
+                <Text style={styles.profileButtonText}>Cambiar contraseña</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity onPress={() => logout()} style={[styles.profileButton, styles.profileButtonSecondary, { marginTop: 12 }]}> 
+              <Text style={styles.profileButtonText}>Cerrar sesión</Text>
+            </TouchableOpacity>
           </View>
+        ) : (
+          <View style={{ width: '100%' }}>
+            <TextInput
+              style={styles.profileField}
+              value={nombre}
+              onChangeText={setNombre}
+              placeholder="Nombre"
+            />
+            <TextInput
+              style={styles.profileField}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email"
+              keyboardType="email-address"
+            />
+            <TextInput
+              style={styles.profileField}
+              value={telefono}
+              onChangeText={setTelefono}
+              placeholder="Teléfono"
+              keyboardType="phone-pad"
+            />
 
-          <TouchableOpacity onPress={() => setEditing(true)} style={styles.primaryButton}>
-            <Text style={styles.primaryButtonText}>Editar perfil</Text>
-          </TouchableOpacity>
+            <View style={styles.profileActions}>
+              <TouchableOpacity
+                onPress={() => {
+                  setEditing(false);
+                  setNombre(user?.nombre ?? '');
+                  setEmail(user?.email ?? '');
+                  setTelefono(user?.telefono ?? '');
+                }}
+                style={[styles.profileButton, { backgroundColor: '#ccc' }]}
+              >
+                <Text style={[styles.profileButtonText, { color: '#333' }]}>Cancelar</Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => setPwdModalVisible(true)} style={[styles.secondaryButtonGreen, { marginTop: 8 }]}>
-            <Text style={styles.secondaryButtonText}>Cambiar contraseña</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => logout()} style={[styles.secondaryButtonGreen, { marginTop: 12 }]}>
-            <Text style={styles.secondaryButtonText}>Cerrar sesión</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+              <TouchableOpacity onPress={onSave} style={[styles.profileButton, styles.profileButtonPrimary]}>
+                <Text style={styles.profileButtonText}>Guardar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+      </View>
 
       <Modal visible={pwdModalVisible} animationType="slide" transparent={true}>
         <View style={{ flex: 1, justifyContent: 'center', padding: 20, backgroundColor: 'rgba(0,0,0,0.4)' }}>
@@ -160,6 +184,8 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Onboarding modal removed */}
     </ScrollView>
   );
 }

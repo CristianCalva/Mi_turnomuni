@@ -227,6 +227,27 @@ export const styles = StyleSheet.create({
     fontWeight: '800',
     marginBottom: 6,
   },
+  profileCard: {
+    backgroundColor: colors.white,
+    padding: 18,
+    borderRadius: 12,
+    elevation: 3,
+    marginBottom: 12,
+  },
+  profileInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f3f5',
+  },
+  profileInfoLabel: {
+    fontWeight: '700',
+    color: '#333',
+  },
+  profileInfoValue: {
+    color: '#666',
+  },
   profileField: {
     width: '100%',
     backgroundColor: '#fff',
@@ -236,6 +257,32 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e6e6e6',
     marginBottom: 10,
+  },
+  profileActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  profileButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 120,
+  },
+  profileButtonPrimary: {
+    backgroundColor: colors.primary,
+  },
+  profileButtonSecondary: {
+    backgroundColor: colors.secondary,
+  },
+  profileButtonText: {
+    color: colors.white,
+    fontWeight: '700',
+  },
+  profileIcon: {
+    marginRight: 8,
   },
   // Header
   headerBar: {

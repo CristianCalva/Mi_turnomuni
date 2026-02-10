@@ -36,10 +36,38 @@ function HomeStack() {
       }}
     >
       <Stack.Screen name="HomeMain" component={HomeScreen} options={{ title: 'Inicio' }} />
-      <Stack.Screen name="Tramites" component={TramitesScreen} />
+    </Stack.Navigator>
+  );
+}
+
+function TramitesStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.primary, height: 92, shadowColor: 'transparent' as any },
+        headerTintColor: '#fff',
+        headerTitleAlign: 'center',
+        headerTitleStyle: { color: '#fff', fontSize: 18, marginTop: 8 },
+      }}
+    >
+      <Stack.Screen name="TramitesMain" component={TramitesScreen} options={{ title: 'Trámites' }} />
       <Stack.Screen name="AgendarTurno" component={AgendarTurnoScreen} options={{ title: 'Agendar Turno' }} />
+    </Stack.Navigator>
+  );
+}
+
+function TurnosStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.primary, height: 92, shadowColor: 'transparent' as any },
+        headerTintColor: '#fff',
+        headerTitleAlign: 'center',
+        headerTitleStyle: { color: '#fff', fontSize: 18, marginTop: 8 },
+      }}
+    >
+      <Stack.Screen name="MisTurnosMain" component={MisTurnosScreen} options={{ title: 'Mis Turnos' }} />
       <Stack.Screen name="TurnoDetalle" component={TurnoDetalleScreen} options={{ title: 'Detalle de turno' }} />
-      <Stack.Screen name="MisTurnos" component={MisTurnosScreen} options={{ title: 'Mis Turnos' }} />
     </Stack.Navigator>
   );
 }
@@ -90,8 +118,8 @@ export default function MainTabNavigator() {
       })}
     >
       <Tab.Screen name="Inicio" component={HomeStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Tramites" component={TramitesScreen} />
-      <Tab.Screen name="MisTurnos" component={MisTurnosScreen} options={{ title: 'Mis Turnos' }} />
+      <Tab.Screen name="Tramites" component={TramitesStack} options={{ headerShown: false }} />
+      <Tab.Screen name="MisTurnos" component={TurnosStack} options={{ headerShown: false, title: 'Mis Turnos' }} />
       <Tab.Screen name="Perfil" component={ProfileScreen} options={{ title: 'Perfil' }} />
       {user?.rol === 'FUNCIONARIO' && (
         <Tab.Screen name="Panel" component={FuncionarioStack} options={{ title: 'Panel' }} />

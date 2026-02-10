@@ -10,7 +10,8 @@ export function navigateOrAuth(
     // Si la ruta objetivo es una pantalla anidada dentro del stack de Inicio,
     // navegar al tab `Inicio` y especificar la pantalla interna.
     if (routeName === 'AgendarTurno') {
-      navigation.navigate('Inicio' as any, { screen: 'AgendarTurno', params } as any);
+      // navegar al tab Tramites que contiene la pantalla AgendarTurno
+      navigation.navigate('Tramites' as any, { screen: 'AgendarTurno', params } as any);
       return;
     }
 

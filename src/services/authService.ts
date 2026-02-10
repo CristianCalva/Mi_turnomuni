@@ -53,6 +53,7 @@ export const login = async (email: string, password: string) => {
       id: String(data.user.id),
       nombre: data.user.nombre,
       email: data.user.email,
+      telefono: data.user.telefono || data.user.phone || data.user.celular || data.user.telefono_celular || undefined,
       rol: data.user.role_name
         ? data.user.role_name
         : data.user.role_id
@@ -94,6 +95,7 @@ export const register = async (
       id: String(data.user.id),
       nombre: data.user.nombre,
       email: data.user.email,
+      telefono: data.user.telefono || data.user.phone || data.user.celular || data.user.telefono_celular || undefined,
       rol: data.user.role_name
         ? data.user.role_name
         : data.user.role_id
@@ -130,4 +132,18 @@ export const recoverReset = async (token: string, newPassword: string) => {
   }
 
   return (attempt.result as any).json ?? JSON.parse((attempt.result as any).bodyText || '{}');
+};
+
+export const checkEmailExists = async (email: string) => {
+  const paths = [`${BASE}/api/auth/check-email`, `${BASE}/auth/check-email`, `${BASE}/check-email`];
+  try {
+    const attempt = await tryPostPaths(paths, { email });
+    if (!attempt.success) return false;
+    const data = (attempt.result as any).json ?? JSON.parse((attempt.result as any).bodyText || '{}');
+    // backend may return { exists: true } or user object
+    if (data && (data.exists === true || data.user)) return true;
+    return false;
+  } catch (e) {
+    return false;
+  }
 };

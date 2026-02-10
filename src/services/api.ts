@@ -40,8 +40,7 @@ function chooseFallback() {
   return FALLBACKS[0] || FALLBACKS[1];
 }
 
-export const API_URL = envUrl || (detected ? `http://${detected}:3000` : chooseFallback());
-
+export const API_URL =  process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.105:3000';
 // Log the chosen API_URL to aid debugging in development
 try {
   // eslint-disable-next-line no-console

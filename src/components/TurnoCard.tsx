@@ -46,15 +46,15 @@ export default function TurnoCard({ turno, onCancel }: Props) {
   };
 
   const onModificar = () => {
-    // Navega al stack "Inicio" y abre la pantalla AgendarTurno en modo edición
+    // Navega al stack "Tramites" y abre la pantalla AgendarTurno en modo edición
     // @ts-ignore
-    navigation.navigate('Inicio', { screen: 'AgendarTurno', params: { turnoId: turno.id } });
+    navigation.navigate('Tramites', { screen: 'AgendarTurno', params: { turnoId: turno.id } });
   };
 
   const onVerDetalle = () => {
-    // Navega al stack "Inicio" y abre la pantalla TurnoDetalle
+    // Navega al stack "MisTurnos" (TurnosStack) y abre la pantalla TurnoDetalle
     // @ts-ignore
-    navigation.navigate('Inicio', { screen: 'TurnoDetalle', params: { turnoId: turno.id } });
+    navigation.navigate('MisTurnos', { screen: 'TurnoDetalle', params: { turnoId: turno.id } });
   };
 
   const bgColor = turno.estado === 'CANCELADO' ? '#fff0f0' : turno.estado === 'COMPLETADO' ? '#e9fff0' : turno.estado === 'CONFIRMADO' ? '#e7f2ff' : '#ffffff';

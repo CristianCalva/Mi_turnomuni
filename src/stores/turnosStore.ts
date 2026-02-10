@@ -15,6 +15,9 @@ export type Turno = {
   estado?: 'PENDIENTE' | 'CONFIRMADO' | 'COMPLETADO' | 'CANCELADO';
   propietarioId?: string; // id del ciudadano propietario del turno
   ventanillaId?: string; // id de la ventanilla/oficina asignada (si aplica)
+  // Datos opcionales del ciudadano (provenientes del backend)
+  ciudadanoNombre?: string;
+  ciudadanoCedula?: string;
 };
 
 /* =======================

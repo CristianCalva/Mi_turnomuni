@@ -3,4 +3,13 @@ export const horariosPorTramite: Record<string, string[]> = {
   'Solicitud de permisos': ['09:00', '10:30', '12:00'],
   'Certificados municipales': ['08:30', '10:00', '14:00'],
   'Catastro': ['09:00', '11:00', '15:00'],
+  'Consulta de deudas': ['08:00', '10:00', '13:00'],
+  'Estado de cuentas': ['09:00', '11:30', '14:30'],
+  'Licencia de funcionamiento': ['08:30', '10:30', '13:30'],
+  'Permisos de construcción': ['09:00', '12:00', '15:00'],
+  'Certificado de no adeudar': ['08:00', '10:00', '14:00'],
+  'Documentos oficiales': ['09:00', '11:00', '13:00'],
+  'Catastros': ['08:30', '10:30', '14:30'],
+  'Avalúo de predios': ['09:00', '11:00', '15:00'],
+  'Información catastral': ['08:00', '10:00', '13:00'],
 };

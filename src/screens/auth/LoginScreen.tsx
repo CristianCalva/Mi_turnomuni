@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
 // Cargar Ionicons de forma segura (fallback a emoji si no está instalado)
 let Ionicons: any = null;
@@ -23,14 +23,36 @@ type RootStackParamList = {
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+  const emailRef = useRef<any>(null);
+  const passwordRef = useRef<any>(null);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const storeLogin = useAuthStore(state => state.login);
 
   const handleLogin = async () => {
+    // clear previous errors
+    setErrors({});
+
+    const newErrors: { [k: string]: string } = {};
+    if (!email.trim()) newErrors.email = 'Ingrese su correo electrónico';
+    else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) newErrors.email = 'Correo inválido';
+    }
+    if (!password) newErrors.password = 'Ingrese su contraseña';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      if (newErrors.email) emailRef.current?.focus();
+      else if (newErrors.password) passwordRef.current?.focus();
+      return;
+    }
+
     try {
       const data = await login(email, password);
       storeLogin(data.token, data.user);
     } catch (e: any) {
+      // show server error near form (general)
       Alert.alert('Error', e?.message || 'Credenciales inválidas');
     }
   };
@@ -49,8 +71,20 @@ export default function LoginScreen() {
           ) : (
             <Text style={styles.inputIcon}>✉️</Text>
           )}
-          <TextInput placeholder="Correo electrónico" placeholderTextColor="#999" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" style={{ flex: 1 }} />
+          <TextInput
+            ref={emailRef}
+            placeholder="Correo electrónico"
+            placeholderTextColor="#999"
+            value={email}
+            onChangeText={(v) => { setEmail(v); setErrors((s) => { const c = { ...s }; delete c.email; return c; }); }}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            style={{ flex: 1 }}
+            returnKeyType="next"
+            onSubmitEditing={() => passwordRef.current?.focus()}
+          />
         </View>
+        {errors.email ? <Text style={{ color: '#ff6b6b', marginLeft: 8, marginTop: 4 }}>{errors.email}</Text> : null}
 
         <View style={styles.inputRow}>
           {Ionicons ? (
@@ -58,8 +92,19 @@ export default function LoginScreen() {
           ) : (
             <Text style={styles.inputIcon}>🔒</Text>
           )}
-          <TextInput placeholder="Contraseña" placeholderTextColor="#999" value={password} onChangeText={setPassword} secureTextEntry style={{ flex: 1 }} />
+          <TextInput
+            ref={passwordRef}
+            placeholder="Contraseña"
+            placeholderTextColor="#999"
+            value={password}
+            onChangeText={(v) => { setPassword(v); setErrors((s) => { const c = { ...s }; delete c.password; return c; }); }}
+            secureTextEntry
+            style={{ flex: 1 }}
+            returnKeyType="done"
+            onSubmitEditing={handleLogin}
+          />
         </View>
+        {errors.password ? <Text style={{ color: '#ff6b6b', marginLeft: 8, marginTop: 4 }}>{errors.password}</Text> : null}
 
         <TouchableOpacity onPress={handleLogin} style={[styles.primaryButton, { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#ccd4db' }]}>
           <Text style={[styles.primaryButtonText, { color: '#fff' }]}>Iniciar Sesión</Text>

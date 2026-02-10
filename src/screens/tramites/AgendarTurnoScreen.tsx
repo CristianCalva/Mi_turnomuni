@@ -3,6 +3,7 @@ import { View, Text, Button, FlatList, TouchableOpacity, ActivityIndicator, Aler
 import { useRoute, useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { horariosPorTramite } from '../../data/horarios';
+import { categorias } from '../../data/tramites';
 import { useTurnosStore } from '../../stores/turnosStore';
 import { useAuthStore } from '../../stores/authStore';
 import { crearTurno, updateTurnoApi } from '../../services/turnosService';
@@ -129,8 +130,26 @@ export default function AgendarTurnoScreen() {
       {step === 1 && (
         <View>
           <Text style={{ marginBottom: 8 }}>Seleccioná el trámite</Text>
-          {/* si no hay lista de trámites aquí, mostrar el trámite pasado por parámetro*/}
-          <Text>No implementado selector global — usá Trámites y luego Agendar</Text>
+          {categorias.map((cat) => (
+            <View key={cat.id} style={{ marginBottom: 12 }}>
+              <Text style={{ fontWeight: '700', marginBottom: 6 }}>{cat.title}</Text>
+              {cat.items.map((it) => {
+                const horas = horariosPorTramite[it.nombre] || horariosPorTramite[it.nombre.replace(/s$/i, '')] || [];
+                return (
+                  <TouchableOpacity
+                    key={it.id}
+                    onPress={() => { setSelectedTramite(it); setStep(2); setSelectedHora(null); }}
+                    style={{ padding: 12, backgroundColor: '#fff', borderRadius: 8, marginBottom: 8 }}
+                  >
+                    <Text style={{ fontWeight: '700' }}>{it.nombre}</Text>
+                    {horas.length > 0 && (
+                      <Text style={{ color: '#0B5ED7', marginTop: 6 }}>{horas.join(' · ')}</Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          ))}
         </View>
       )}
 
