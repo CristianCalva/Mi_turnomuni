@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Button, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, Button, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
 import { useAuthStore } from '../../stores/authStore';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import LandingHero from '../../components/LandingHero';
@@ -9,6 +9,8 @@ import { colors } from '../../theme/colors';
 import { useTurnosStore } from '../../stores/turnosStore';
 let Ionicons: any = null;
 try { Ionicons = require('@expo/vector-icons').Ionicons; } catch (e) { Ionicons = null; }
+let FontAwesome: any = null;
+try { FontAwesome = require('@expo/vector-icons').FontAwesome; } catch (e) { FontAwesome = null; }
 
 type RootStackParamList = {
   Tramites: undefined;
@@ -22,6 +24,24 @@ export default function HomeScreen() {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const nextTurno = useTurnosStore((s) => s.turnos[0]);
+
+  const openWhatsApp = async () => {
+    // Número de ejemplo (formato internacional sin +). Cambia este valor por el real.
+      const phone = '593967816221';
+    const text = 'Hola, necesito ayuda con MiTurnoMuni';
+    const urlApp = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(text)}`;
+    const urlWeb = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+    try {
+      const supported = await Linking.canOpenURL(urlApp);
+      if (supported) {
+        await Linking.openURL(urlApp);
+      } else {
+        await Linking.openURL(urlWeb);
+      }
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo abrir WhatsApp');
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
@@ -46,16 +66,16 @@ export default function HomeScreen() {
 
       <LandingHero onCTAPress={() => navigateOrAuth(navigation, isAuthenticated, 'Tramites')} />
 
-      <View style={{ padding: 20 }}>
+      <View style={{ padding: 15 }}>
         <View style={styles.heroCard}>
-          <Text style={styles.heroTitle}>Bienvenido{user?.nombre ? `, ${user.nombre}` : ''}</Text>
+          <Text style={styles.heroTitle}>Hola 👋 Bienvenido {user?.nombre ? `, ${user.nombre}` : ''}</Text>
           <Text style={styles.heroSubtitle}>Accedé rápidamente a los servicios más usados</Text>
         </View>
 
         {nextTurno && (
           <View style={styles.upcomingCard}>
             <Text style={{ fontWeight: '800' }}>Próximo turno</Text>
-            <Text style={{ color: '#666', marginTop: 6 }}>{nextTurno.tramite}</Text>
+            <Text style={{ color: '#424040', marginTop: 6 }}>{nextTurno.tramite}</Text>
             <Text style={{ color: '#666', marginTop: 4 }}>{nextTurno.fecha} · {nextTurno.hora}</Text>
             <View style={{ marginTop: 8, flexDirection: 'row', justifyContent: 'flex-end' }}>
               <TouchableOpacity onPress={() => navigation.navigate('MisTurnos' as any)}>
@@ -68,25 +88,25 @@ export default function HomeScreen() {
         <Text style={{ marginBottom: 10, color: colors.text }}>Accesos rápidos</Text>
 
         <View style={styles.quickActionsRow}>
-          <TouchableOpacity style={[styles.dashboardTile, { width: '48%' }]} onPress={() => navigateOrAuth(navigation, isAuthenticated, 'Tramites')}>
+          <TouchableOpacity style={styles.dashboardTile} onPress={() => navigateOrAuth(navigation, isAuthenticated, 'Tramites')}>
             <View style={styles.tileIcon}>{Ionicons ? <Ionicons name="document-text-outline" size={20} color={colors.primary} /> : <Text>📄</Text>}</View>
             <Text style={{ fontWeight: '700', marginBottom: 6 }}>Trámites</Text>
             <Text style={{ fontSize: 12, color: '#666' }}>Ver y agendar</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.dashboardTile, { width: '48%' }]} onPress={() => navigateOrAuth(navigation, isAuthenticated, 'MisTurnos')}>
+          <TouchableOpacity style={styles.dashboardTile} onPress={() => navigateOrAuth(navigation, isAuthenticated, 'MisTurnos')}>
             <View style={styles.tileIcon}>{Ionicons ? <Ionicons name="calendar-outline" size={20} color={colors.primary} /> : <Text>📅</Text>}</View>
             <Text style={{ fontWeight: '700', marginBottom: 6 }}>Mis turnos</Text>
             <Text style={{ fontSize: 12, color: '#666' }}>Ver, cancelar</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.dashboardTile, { width: '48%' }]} onPress={() => navigateOrAuth(navigation, isAuthenticated, 'Messages')}>
-            <View style={styles.tileIcon}>{Ionicons ? <Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.primary} /> : <Text>💬</Text>}</View>
-            <Text style={{ fontWeight: '700', marginBottom: 6 }}>Mensajes</Text>
-            <Text style={{ fontSize: 12, color: '#666' }}>Notificaciones</Text>
+          <TouchableOpacity style={styles.dashboardTile} onPress={() => navigation.navigate('Noticias' as any)}>
+            <View style={styles.tileIcon}>{Ionicons ? <Ionicons name="newspaper-outline" size={20} color={colors.primary} /> : <Text>📰</Text>}</View>
+            <Text style={{ fontWeight: '700', marginBottom: 6 }}>Noticias</Text>
+            <Text style={{ fontSize: 12, color: '#666' }}>Eventos, comunicados, avisos</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.dashboardTile, { width: '48%' }]} onPress={() => navigation.navigate('Help' as any)}>
+          <TouchableOpacity style={styles.dashboardTile} onPress={() => navigation.navigate('Help' as any)}>
             <View style={styles.tileIcon}>{Ionicons ? <Ionicons name="help-circle-outline" size={20} color={colors.primary} /> : <Text>❓</Text>}</View>
             <Text style={{ fontWeight: '700', marginBottom: 6 }}>Ayuda</Text>
             <Text style={{ fontSize: 12, color: '#666' }}>FAQ</Text>

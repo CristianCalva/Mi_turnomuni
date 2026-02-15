@@ -4,6 +4,8 @@ import { colors } from '../theme/colors';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/home/HomeScreen';
+import HelpScreen from '../screens/home/HelpScreen';
+import NoticiasScreen from '../screens/home/NoticiasScreen';
 import TramitesScreen from '../screens/tramites/TramitesScreen';
 import AgendarTurnoScreen from '../screens/tramites/AgendarTurnoScreen';
 import MisTurnosScreen from '../screens/turnos/MisTurnosScreen';
@@ -36,6 +38,8 @@ function HomeStack() {
       }}
     >
       <Stack.Screen name="HomeMain" component={HomeScreen} options={{ title: 'Inicio' }} />
+      <Stack.Screen name="Help" component={HelpScreen} options={{ title: 'Ayuda' }} />
+      <Stack.Screen name="Noticias" component={NoticiasScreen} options={{ title: 'Noticias' }} />
     </Stack.Navigator>
   );
 }

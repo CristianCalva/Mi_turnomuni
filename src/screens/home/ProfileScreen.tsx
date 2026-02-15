@@ -145,7 +145,7 @@ export default function ProfileScreen() {
             </View>
           </View>
         )}
-      </View>
+      </Animated.View>
 
       <Modal visible={pwdModalVisible} animationType="slide" transparent={true}>
         <View style={{ flex: 1, justifyContent: 'center', padding: 20, backgroundColor: 'rgba(0,0,0,0.4)' }}>

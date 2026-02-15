@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, Button, FlatList, TouchableOpacity, ActivityIndicator, Alert, Modal, ScrollView } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { horariosPorTramite } from '../../data/horarios';
@@ -8,6 +8,7 @@ import { useTurnosStore } from '../../stores/turnosStore';
 import { useAuthStore } from '../../stores/authStore';
 import { crearTurno, updateTurnoApi } from '../../services/turnosService';
 import { styles } from '../../theme/styles';
+import { colors } from '../../theme/colors';
 
 
 export default function AgendarTurnoScreen() {
@@ -24,6 +25,7 @@ export default function AgendarTurnoScreen() {
   const [selectedTramite, setSelectedTramite] = useState<any>(tramiteParam);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTramiteModal, setShowTramiteModal] = useState(false);
   const [selectedHora, setSelectedHora] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +56,11 @@ export default function AgendarTurnoScreen() {
         return;
       }
       if (existing) {
-        setSelectedTramite({ id: 'local', nombre: existing.tramite });
+        // intentar resolver el id del trámite buscando por nombre en las categorías
+        const allItems = categorias.reduce((acc: any[], c) => acc.concat(c.items), [] as any[]);
+        const match = allItems.find((it) => String(it.nombre).toLowerCase() === String(existing.tramite).toLowerCase());
+        if (match) setSelectedTramite(match);
+        else setSelectedTramite({ id: 'local', nombre: existing.tramite });
         // intentar parsear fecha
         try {
           setSelectedDate(new Date(existing.fecha));
@@ -76,12 +82,15 @@ export default function AgendarTurnoScreen() {
   const handleSubmit = async () => {
     if (!selectedTramite || !selectedHora) return Alert.alert('Validación', 'Seleccione trámite y hora');
     setLoading(true);
-    const payload = {
-      tramiteId: selectedTramite.id,
+    const payload: any = {
       tramiteNombre: selectedTramite.nombre,
       fecha: selectedDate.toISOString().split('T')[0],
       hora: selectedHora,
     };
+    // incluir `tramiteId` sólo si está disponible y no es el marcador local usado para edición
+    if (selectedTramite.id && selectedTramite.id !== 'local') {
+      payload.tramiteId = selectedTramite.id;
+    }
 
     try {
       if (editTurnoId) {
@@ -153,52 +162,113 @@ export default function AgendarTurnoScreen() {
         </View>
       )}
 
+      <Modal visible={showTramiteModal} animationType="slide" transparent={true} onRequestClose={() => setShowTramiteModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalHeaderTitle}>Seleccionar trámite</Text>
+              <TouchableOpacity onPress={() => setShowTramiteModal(false)}>
+                <Text style={styles.modalClose}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={{ marginTop: 12 }}>
+              {categorias.map((cat) => (
+                <View key={cat.id} style={{ marginBottom: 18 }}>
+                  <Text style={{ fontWeight: '800', marginBottom: 8 }}>{cat.title}</Text>
+                  <FlatList
+                    horizontal
+                    data={cat.items}
+                    keyExtractor={(it: any) => it.id}
+                    showsHorizontalScrollIndicator={false}
+                    renderItem={({ item }: any) => (
+                      <TouchableOpacity
+                        onPress={() => { setSelectedTramite(item); setStep(2); setSelectedHora(null); setShowTramiteModal(false); }}
+                        style={styles.tramitesItem}
+                      >
+                        <Text style={styles.tramitesItemText}>{item.nombre}</Text>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
       {step === 2 && (
         <View>
-          <Text style={{ fontWeight: '700' }}>Trámite</Text>
-          <Text style={{ marginBottom: 8 }}>{selectedTramite?.nombre}</Text>
-
-          <Text style={{ fontWeight: '700' }}>Seleccioná fecha</Text>
-          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={{ padding: 12, backgroundColor: '#fff', borderRadius: 8, marginTop: 8, marginBottom: 12 }}>
-            <Text>{selectedDate.toDateString()}</Text>
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker value={selectedDate} mode="date" display="calendar" onChange={onChangeDate} />
-          )}
-
-          <Text style={{ fontWeight: '700', marginTop: 8 }}>Horas disponibles</Text>
-          <FlatList
-            data={horarios}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity onPress={() => setSelectedHora(item)} style={{ padding: 10, backgroundColor: selectedHora === item ? '#cfe6ff' : '#fff', marginVertical: 6, borderRadius: 8 }}>
-                <Text>{item}</Text>
+          <View style={[styles.cardTurno, { padding: 18 }]}> 
+            <Text style={styles.tramiteTitle}>Trámite seleccionado</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, justifyContent: 'space-between' }}>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: '#333' }}>{selectedTramite?.nombre}</Text>
+              <TouchableOpacity onPress={() => setShowDatePicker(true)} style={{ backgroundColor: '#f6f9ff', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10 }}>
+                <Text style={{ color: '#0B5ED7', fontWeight: '700' }}>{selectedDate.toLocaleDateString()}</Text>
               </TouchableOpacity>
+            </View>
+            {showDatePicker && (
+              <View style={{ marginTop: 12 }}>
+                <DateTimePicker value={selectedDate} mode="date" display="calendar" onChange={onChangeDate} />
+              </View>
             )}
-          />
 
-          <View style={{ marginTop: 12 }}>
-            <Button title="Siguiente" onPress={() => setStep(3)} disabled={!selectedHora || !selectedTramite} />
+            <Text style={[styles.sectionHeader, { marginTop: 14 }]}>Horas disponibles</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 6 }}>
+              {horarios.map((h) => (
+                <TouchableOpacity
+                  key={h}
+                  onPress={() => setSelectedHora(h)}
+                  style={[
+                    styles.chip,
+                    selectedHora === h ? styles.chipSelected : undefined,
+                  ]}
+                >
+                  <Text style={selectedHora === h ? styles.chipTextSelected : undefined}>{h}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <View style={{ marginTop: 16, flexDirection: 'row', justifyContent: 'space-between' }}>
+              {!editTurnoId ? (
+                <TouchableOpacity onPress={() => setShowTramiteModal(true)} style={[styles.changeTramiteButton, { width: '48%' }]}> 
+                  <Text style={{ color: '#fff', fontWeight: '800' }}>Cambiar trámite</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={[styles.primaryButton, { backgroundColor: '#f1f3f5', width: '48%' }]}> 
+                  <Text style={[styles.primaryButtonText, { color: '#333' }]}>Seleccionar fecha</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity onPress={() => setStep(3)} disabled={!selectedHora || !selectedTramite} style={[styles.primaryButton, { width: '48%', opacity: (!selectedHora || !selectedTramite) ? 0.6 : 1 }]}> 
+                <Text style={styles.primaryButtonText}>Siguiente</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       )}
 
       {step === 3 && (
         <View>
-          <Text style={{ fontWeight: '700' }}>Confirmación</Text>
-          <Text>Trámite: {selectedTramite?.nombre}</Text>
-          <Text>Fecha: {selectedDate.toDateString()}</Text>
-          <Text>Hora: {selectedHora}</Text>
+          <Text style={styles.sectionHeader}>Confirmación</Text>
+          <View style={styles.card}>
+            <Text style={{ fontWeight: '700', marginBottom: 6 }}>{selectedTramite?.nombre}</Text>
+            <Text style={{ color: '#6b6b6b', marginBottom: 4 }}>Fecha</Text>
+            <Text style={{ marginBottom: 8 }}>{selectedDate.toLocaleDateString()}</Text>
+            <Text style={{ color: '#6b6b6b', marginBottom: 4 }}>Hora</Text>
+            <Text style={{ marginBottom: 8 }}>{selectedHora}</Text>
+          </View>
 
           <View style={{ height: 12 }} />
           {loading ? (
             <ActivityIndicator />
           ) : (
-            <>
-              <Button title="Confirmar y enviar" onPress={handleSubmit} />
-              <View style={{ height: 8 }} />
-              <Button title="Volver" onPress={() => setStep(2)} />
-            </>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <TouchableOpacity onPress={() => setStep(2)} style={[styles.secondaryButtonGreen, { width: '48%', backgroundColor: '#e9ecef' }]}> 
+                <Text style={[styles.secondaryButtonText, { color: '#333' }]}>Volver</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSubmit} style={[styles.primaryButton, { width: '48%' }]}> 
+                <Text style={styles.primaryButtonText}>Confirmar y enviar</Text>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
       )}

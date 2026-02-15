@@ -70,8 +70,9 @@ export default function RegisterScreen() {
       }
 
       const data = await register(cedula, nombre, email, password, rol, telefono);
-      storeLogin(data.token, data.user);
-      Alert.alert('Éxito', 'Cuenta creada correctamente');
+      Alert.alert('Éxito', 'Cuenta creada correctamente', [
+        { text: 'OK', onPress: () => storeLogin(data.token, data.user) },
+      ]);
     } catch (e: any) {
       Alert.alert('Error', e?.message || 'Registro fallido');
     } finally {
