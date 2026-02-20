@@ -13,6 +13,7 @@ import TurnoDetalleScreen from '../screens/turnos/TurnoDetalleScreen';
 import ProfileScreen from '../screens/home/ProfileScreen';
 import FuncionarioHomeScreen from '../screens/funcionario/FuncionarioHomeScreen';
 import FuncionarioDashboardScreen from '../screens/funcionario/FuncionarioDashboardScreen';
+import HolidaysScreen from '../screens/funcionario/HolidaysScreen';
 import { useAuthStore } from '../stores/authStore';
 
 const Tab = createBottomTabNavigator();
@@ -113,6 +114,7 @@ export default function MainTabNavigator() {
           Inicio: 'home-outline',
           Tramites: 'documents-outline',
           MisTurnos: 'calendar-outline',
+          Feriados: 'flag-outline',
           Perfil: 'person-circle-outline',
           Panel: 'speedometer-outline',
         };
@@ -123,6 +125,7 @@ export default function MainTabNavigator() {
     >
       <Tab.Screen name="Inicio" component={HomeStack} options={{ headerShown: false }} />
       <Tab.Screen name="Tramites" component={TramitesStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Feriados" component={HolidaysScreen} options={{ title: 'Feriados' }} />
       <Tab.Screen name="MisTurnos" component={TurnosStack} options={{ headerShown: false, title: 'Mis Turnos' }} />
       <Tab.Screen name="Perfil" component={ProfileScreen} options={{ title: 'Perfil' }} />
       {user?.rol === 'FUNCIONARIO' && (

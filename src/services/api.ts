@@ -1,69 +1,115 @@
-let Constants: any;
-try {
-  // Use require to avoid TypeScript/ES import errors when not running inside Expo
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  Constants = require('expo-constants');
-} catch (e) {
-  Constants = null;
-}
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-function detectHostFromExpo() {
+// ========================================
+// 🔹 URL BASE DE TU BACKEND
+// ⚠️ CAMBIA ESTA IP POR LA QUE TE SALE EN ipconfig
+// ========================================
+export const API_URL = "http://192.168.100.24:3000";
+
+
+// ========================================
+// 🔹 FUNCIÓN AUXILIAR PARA PETICIONES HTTP
+// ========================================
+const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   try {
-    if (!Constants) return null;
-    const manifest: any = (Constants as any).manifest || (Constants as any).expoConfig;
-    const debuggerHost = manifest && (manifest.debuggerHost || manifest.packagerOpts?.host);
-    if (debuggerHost) return debuggerHost.split(':')[0];
-  } catch (e) {
-    // ignore
+    const response = await fetch(`${API_URL}${endpoint}`, options);
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`HTTP ${response.status} - ${text}`);
+    }
+
+    return response.json();
+  } catch (error: any) {
+    console.error("❌ Error en apiFetch:", error.message);
+    throw error;
   }
-  return null;
+};
+
+
+// ========================================
+// 🔹 INTERFACES PARA FERIADOS
+// ========================================
+export interface Holiday {
+  id: string;
+  fecha: string;           // YYYY-MM-DD
+  nombreLocal: string;
+  nombreIngles: string;
+  esNacional: boolean;
+  tipo: string;
+  afectaAgendamientos: boolean;
 }
 
-const envUrl = (process.env as any)?.API_URL || (global as any)?.API_URL;
-const detected = detectHostFromExpo();
-// Fallbacks comunes para desarrollo
-const FALLBACKS = [
-  // Android emulator
-  'http://10.0.2.2:3000',
-  // localhost (simuladores iOS / web)
-  'http://localhost:3000',
-  // common LAN IP placeholder (user should override if different)
-  'http://192.168.0.103:3000',
-];
-
-function chooseFallback() {
-  // prefer detected host when available
-  if (detected) return `http://${detected}:3000`;
-  // prefer env override
-  if (envUrl) return envUrl;
-  // otherwise return first reachable fallback (we can't probe here reliably), so pick emulator then localhost
-  return FALLBACKS[0] || FALLBACKS[1];
+interface FeriadosResponse {
+  success: boolean;
+  data: Holiday[];
+  meta: {
+    total: number;
+    anio: string;
+    pais: string;
+    actualizado: string;
+  };
+  error?: string;
 }
 
-export const API_URL =  process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.102:3000';
-// Log the chosen API_URL to aid debugging in development
-try {
-  // eslint-disable-next-line no-console
-  console.log('[MiTurnoMuni] API_URL =', API_URL);
-} catch (e) {
-  // ignore
-}
 
-export const apiFetch = async (
-  endpoint: string,
-  options?: RequestInit
-) => {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    ...options,
-  });
+// ========================================
+// 🔹 SERVICIO DE FERIADOS
+// ========================================
+export const HolidayService = {
 
-  if (!response.ok) {
-    const text = await response.text().catch(() => null);
-    throw new Error(text || 'Error en la API');
+  getHolidays: async (): Promise<Holiday[]> => {
+    try {
+      // 1️⃣ Intentar obtener desde caché
+      const cached = await AsyncStorage.getItem('@feriados_2026');
+
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+
+        if (Date.now() - timestamp < 3600000) {
+          console.log('📦 Usando feriados desde caché');
+          return data as Holiday[];
+        }
+      }
+
+      // 2️⃣ Petición a TU backend
+      const response = await apiFetch('/api/feriados', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': 'mi_clave_secreta_municipalidad_2024'
+        }
+      });
+
+      const feriadosResponse = response as FeriadosResponse;
+
+      if (!feriadosResponse.success) {
+        throw new Error(feriadosResponse.error || 'Error en respuesta del servidor');
+      }
+
+      // 3️⃣ Guardar en caché
+      await AsyncStorage.setItem('@feriados_2026', JSON.stringify({
+        data: feriadosResponse.data,
+        timestamp: Date.now()
+      }));
+
+      return feriadosResponse.data;
+
+    } catch (error: any) {
+      console.error('❌ Error obteniendo feriados:', error.message);
+      throw error;
+    }
+  },
+
+  getHolidaysAffectingAppointments: (holidays: Holiday[]): Holiday[] => {
+    return holidays.filter(h => h.afectaAgendamientos);
+  },
+
+  isHoliday: (holidays: Holiday[], fecha: string | Date): boolean => {
+    const fechaStr = fecha instanceof Date
+      ? fecha.toISOString().split('T')[0]
+      : fecha;
+
+    return holidays.some(h => h.fecha === fechaStr);
   }
-
-  return response.json();
 };

@@ -24,6 +24,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
+  const [serverError, setServerError] = useState<string | null>(null);
   const emailRef = useRef<any>(null);
   const passwordRef = useRef<any>(null);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -51,9 +52,12 @@ export default function LoginScreen() {
     try {
       const data = await login(email, password);
       storeLogin(data.token, data.user);
+      setServerError(null);
     } catch (e: any) {
-      // show server error near form (general)
-      Alert.alert('Error', e?.message || 'Credenciales inválidas');
+      // show server error near form (general) and keep Alert for visibility
+      const msg = e?.message || 'Credenciales inválidas';
+      setServerError(msg);
+      Alert.alert('Error', msg);
     }
   };
 
@@ -105,6 +109,10 @@ export default function LoginScreen() {
           />
         </View>
         {errors.password ? <Text style={{ color: '#ff6b6b', marginLeft: 8, marginTop: 4 }}>{errors.password}</Text> : null}
+
+        {serverError ? (
+          <Text style={{ color: '#ffd2d2', marginLeft: 8, marginTop: 10 }}>{serverError}</Text>
+        ) : null}
 
         <TouchableOpacity onPress={handleLogin} style={[styles.primaryButton, { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#ccd4db' }]}>
           <Text style={[styles.primaryButtonText, { color: '#fff' }]}>Iniciar Sesión</Text>

@@ -272,6 +272,7 @@ export default function AgendarTurnoScreen() {
           )}
         </View>
       )}
+
     </View>
   );
 }
