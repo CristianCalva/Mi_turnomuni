@@ -13,7 +13,7 @@ import TurnoDetalleScreen from '../screens/turnos/TurnoDetalleScreen';
 import ProfileScreen from '../screens/home/ProfileScreen';
 import FuncionarioHomeScreen from '../screens/funcionario/FuncionarioHomeScreen';
 import FuncionarioDashboardScreen from '../screens/funcionario/FuncionarioDashboardScreen';
-import HolidaysScreen from '../screens/funcionario/HolidaysScreen';
+import HolidaysScreen from '../screens/feriados/HolidaysScreen';
 import { useAuthStore } from '../stores/authStore';
 
 const Tab = createBottomTabNavigator();
