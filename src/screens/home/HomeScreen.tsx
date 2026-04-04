@@ -47,7 +47,10 @@ export default function HomeScreen() {
     <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
       {/* Header personalizado */}
       <View style={styles.headerBar}>
-        <Text style={styles.headerGreeting}>{`Hola${user?.nombre ? ', ' + user.nombre : ''}`}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={styles.headerGreeting}>{`Hola${user?.nombre ? ', ' + user.nombre : ''}`}</Text>
+          {/* role label removed per request */}
+        </View>
         <View style={styles.headerIcons}>
           <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate('Messages' as any)}>
             {Ionicons ? <Ionicons name="notifications-outline" size={22} color="#fff" /> : <Text style={{ color: '#fff' }}>🔔</Text>}
@@ -70,7 +73,14 @@ export default function HomeScreen() {
         <View style={styles.heroCard}>
           <Text style={styles.heroTitle}>Hola 👋 Bienvenido {user?.nombre ? `, ${user.nombre}` : ''}</Text>
           <Text style={styles.heroSubtitle}>Accedé rápidamente a los servicios más usados</Text>
-        </View>
+          {/* Removed role message per request */}
+          </View>
+          {user?.rol === 'FUNCIONARIO' && !user?.ventanillaId ? (
+            <View style={{ marginTop: 8, padding: 8, borderRadius: 8, backgroundColor: '#fff4e5' }}>
+              <Text style={{ color: '#6b4b00', fontWeight: '700' }}>Has ingresado como funcionario administrador</Text>
+              <Text style={{ color: '#6b4b00', marginTop: 4 }}>No tienes una ventanilla asignada.</Text>
+            </View>
+          ) : null}
 
         {nextTurno && (
           <View style={styles.upcomingCard}>

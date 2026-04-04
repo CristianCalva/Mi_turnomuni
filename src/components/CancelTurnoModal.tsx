@@ -9,10 +9,10 @@ type Props = {
 };
 
 const DEFAULT_REASONS = [
-  'No puedo asistir',
-  'Cambio de fecha',
-  'Trámite resuelto por otra vía',
-  'Error al agendar',
+  'Trámite atendido',
+  'Ventanilla cerrada',
+  'Documentación incompleta',
+  'Error de registro',
   'Otro',
 ];
 

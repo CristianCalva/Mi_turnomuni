@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, FlatList, Alert, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTurnosStore } from '../../stores/turnosStore';
 import { styles } from '../../theme/styles';
 import { useAuthStore } from '../../stores/authStore';
@@ -11,7 +12,7 @@ import { getTurnos, cancelarTurnoApi } from '../../services/turnosService';
 export default function MisTurnosScreen() {
   const { turnos, cancelarTurno } = useTurnosStore();
   const { isAuthenticated, user } = useAuthStore();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
@@ -32,7 +33,7 @@ export default function MisTurnosScreen() {
       try {
         // @ts-ignore
         const token = useAuthStore.getState().token;
-        const remote = await getTurnos(token);
+        const remote = await getTurnos(token ?? undefined);
         if (!mounted) return;
         // mapear respuesta al tipo Turno esperado
         const mapped = (remote || []).map((r: any) => ({
@@ -45,7 +46,24 @@ export default function MisTurnosScreen() {
           propietarioId: r.ciudadano_id || r.usuario_id || r.owner_id || r.propietarioId || r.propietario_id || undefined,
           ventanillaId: r.ventanilla_id || r.vId || r.ventanillaId || undefined,
         }));
-        useTurnosStore.getState().setTurnos(mapped);
+        // Si el servidor responde con lista vacía y tenemos datos locales, limpiar el cache persistido
+        if (Array.isArray(mapped) && mapped.length === 0) {
+          const existing = useTurnosStore.getState().turnos;
+          if (existing && existing.length > 0) {
+            try {
+              await AsyncStorage.removeItem('turnos-storage');
+            } catch (e) {
+              // ignore
+            }
+            useTurnosStore.getState().setTurnos([]);
+            // informar al usuario brevemente
+            Alert.alert('Sincronizado', 'El cache local de turnos fue limpiado porque el servidor no reporta turnos.');
+          } else {
+            useTurnosStore.getState().setTurnos(mapped);
+          }
+        } else {
+          useTurnosStore.getState().setTurnos(mapped);
+        }
       } catch (e) {
         // Silencioso: se muestra en UI si es necesario
       } finally {
@@ -62,23 +80,10 @@ export default function MisTurnosScreen() {
     const user = useAuthStore.getState().user;
     if (!turno) return;
 
-    // Reglas: Ciudadano solo puede cancelar sus propios turnos antes de la hora
+    // Regla nueva: los CIUDADANO no pueden cancelar turnos desde la app.
     if (user?.rol === 'CIUDADANO') {
-      if (!turno.propietarioId || String(turno.propietarioId) !== String(user.id)) {
-        Alert.alert('No autorizado', 'No puedes cancelar turnos de otros ciudadanos');
-        return;
-      }
-
-      // verificar hora
-      try {
-        const dt = new Date(`${turno.fecha}T${turno.hora || '00:00'}`);
-        if (Date.now() >= dt.getTime()) {
-          Alert.alert('No permitido', 'No puedes cancelar un turno después de la hora programada');
-          return;
-        }
-      } catch {
-        // si no parsea, permitir que la UI abra el modal y dejar validación al servidor
-      }
+      Alert.alert('No autorizado', 'Los ciudadanos no pueden cancelar turnos desde la aplicación.');
+      return;
     }
 
     setCancelTurnoId(id);
@@ -95,7 +100,7 @@ export default function MisTurnosScreen() {
     try {
       // @ts-ignore
       const token = useAuthStore.getState().token;
-      await cancelarTurnoApi(cancelTurnoId, token);
+      await cancelarTurnoApi(String(cancelTurnoId), token ?? undefined);
       cancelarTurno(cancelTurnoId);
       Alert.alert('Cancelado', 'Turno cancelado correctamente');
     } catch (e) {
@@ -111,7 +116,7 @@ export default function MisTurnosScreen() {
     try {
       // @ts-ignore
       const token = useAuthStore.getState().token;
-      const remote = await getTurnos(token);
+      const remote = await getTurnos(token ?? undefined);
       const mapped = (remote || []).map((r: any) => ({
         id: String(r.id ?? r._id ?? r.uuid ?? `${r.fecha}-${r.hora}`),
         tramite: r.tramite_nombre || r.tramite || r.nombre || 'Trámite',
@@ -122,7 +127,22 @@ export default function MisTurnosScreen() {
         propietarioId: r.ciudadano_id || r.usuario_id || r.owner_id || r.propietarioId || r.propietario_id || undefined,
         ventanillaId: r.ventanilla_id || r.vId || r.ventanillaId || undefined,
       }));
-      useTurnosStore.getState().setTurnos(mapped);
+      if (Array.isArray(mapped) && mapped.length === 0) {
+        const existing = useTurnosStore.getState().turnos;
+        if (existing && existing.length > 0) {
+          try {
+            await AsyncStorage.removeItem('turnos-storage');
+          } catch (e) {
+            // ignore
+          }
+          useTurnosStore.getState().setTurnos([]);
+          Alert.alert('Sincronizado', 'El cache local de turnos fue limpiado porque el servidor no reporta turnos.');
+        } else {
+          useTurnosStore.getState().setTurnos(mapped);
+        }
+      } else {
+        useTurnosStore.getState().setTurnos(mapped);
+      }
     } catch (e) {
       // ignore
     } finally {
@@ -133,26 +153,56 @@ export default function MisTurnosScreen() {
   return (
     <View style={[styles.container, { paddingTop: 20 }]}>
       {loading ? (
-        <ActivityIndicator size="large" style={{ marginTop: 40 }} />
+        <>
+          {/* 🆕 BOTÓN: Adjuntar Documento */}
+          <View style={{ paddingHorizontal: 16 }}>
+              <TouchableOpacity
+              style={styles.attachDocumentButton}
+              onPress={() => navigation.navigate('DocumentCamera')}
+            >
+              <Text style={styles.attachDocumentButtonIcon}>📄</Text>
+              <Text style={styles.attachDocumentButtonText}>
+                Adjuntar Documento
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <ActivityIndicator size="large" style={{ marginTop: 40 }} />
+        </>
       ) : (
-        <FlatList
-          data={(() => {
-            if (!user) return turnos;
-            if (user.rol === 'CIUDADANO') return turnos.filter((t) => t.propietarioId && String(t.propietarioId) === String(user.id));
-            if (user.rol === 'FUNCIONARIO') {
-              // si el funcionario tiene una ventanilla asignada, mostrar solo turnos de esa ventanilla
-              if (user.ventanillaId) return turnos.filter((t) => t.ventanillaId && String(t.ventanillaId) === String(user.ventanillaId));
-              return turnos; // sin ventanilla, mostrar todos asignados (fallback)
-            }
-            return turnos;
-          })()}
-          keyExtractor={(item) => item.id}
-          ListEmptyComponent={<Text style={{ color: '#666' }}>No tiene turnos agendados</Text>}
-          renderItem={({ item }) => (
-            <TurnoCard turno={item} onCancel={() => openCancelModal(item.id)} />
-          )}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        />
+        <>
+          {/* 🆕 BOTÓN: Adjuntar Documento (también visible cuando hay datos) */}
+          <View style={{ paddingHorizontal: 16 }}>
+            <TouchableOpacity
+              style={styles.attachDocumentButton}
+              onPress={() => navigation.navigate('DocumentCamera')}
+            >
+              <Text style={styles.attachDocumentButtonIcon}>📄</Text>
+              <Text style={styles.attachDocumentButtonText}>
+                Adjuntar Documento
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={(() => {
+              if (!user) return turnos;
+              if (user.rol === 'CIUDADANO') return turnos.filter((t) => t.propietarioId && String(t.propietarioId) === String(user.id));
+              if (user.rol === 'FUNCIONARIO') {
+                // si el funcionario tiene una ventanilla asignada, mostrar solo turnos de esa ventanilla
+                if (user.ventanillaId) return turnos.filter((t) => t.ventanillaId && String(t.ventanillaId) === String(user.ventanillaId));
+                return turnos; // sin ventanilla, mostrar todos asignados (fallback)
+              }
+              return turnos;
+            })()}
+            keyExtractor={(item) => item.id}
+            ListEmptyComponent={<Text style={{ color: '#666' }}>No tiene turnos agendados</Text>}
+            renderItem={({ item }) => (
+              <TurnoCard turno={item} onCancel={() => openCancelModal(item.id)} />
+            )}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          />
+        </>
       )}
 
       {/* Modal de cancelación */}

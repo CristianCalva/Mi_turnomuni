@@ -1,3 +1,4 @@
+// C:\Mi_TurnoMuni\src\navigation\MainTabNavigator.tsx
 import React from 'react';
 import { Text } from 'react-native';
 import { colors } from '../theme/colors';
@@ -14,6 +15,8 @@ import ProfileScreen from '../screens/home/ProfileScreen';
 import FuncionarioHomeScreen from '../screens/funcionario/FuncionarioHomeScreen';
 import FuncionarioDashboardScreen from '../screens/funcionario/FuncionarioDashboardScreen';
 import HolidaysScreen from '../screens/feriados/HolidaysScreen';
+import DocumentCameraScreen from '../screens/turnos/DocumentCameraScreen';
+
 import { useAuthStore } from '../stores/authStore';
 
 const Tab = createBottomTabNavigator();
@@ -73,6 +76,19 @@ function TurnosStack() {
     >
       <Stack.Screen name="MisTurnosMain" component={MisTurnosScreen} options={{ title: 'Mis Turnos' }} />
       <Stack.Screen name="TurnoDetalle" component={TurnoDetalleScreen} options={{ title: 'Detalle de turno' }} />
+      
+      {/* 🆕 NUEVO: Pantalla de cámara para adjuntar documentos */}
+      <Stack.Screen 
+        name="DocumentCamera" 
+        component={DocumentCameraScreen} 
+        options={{ 
+          title: '📄 Adjuntar Documento',
+          headerStyle: { backgroundColor: colors.primary, height: 92, shadowColor: 'transparent' as any },
+          headerTintColor: '#fff',
+          headerTitleAlign: 'center',
+          headerTitleStyle: { color: '#fff', fontSize: 18, marginTop: 8 },
+        }} 
+      />
     </Stack.Navigator>
   );
 }
@@ -110,17 +126,17 @@ export default function MainTabNavigator() {
         tabBarInactiveTintColor: '#cfe0ff',
         tabBarLabelStyle: { paddingBottom: 6 },
         tabBarIcon: ({ color, size }) => {
-        const nameMap: Record<string, string> = {
-          Inicio: 'home-outline',
-          Tramites: 'documents-outline',
-          MisTurnos: 'calendar-outline',
-          Feriados: 'flag-outline',
-          Perfil: 'person-circle-outline',
-          Panel: 'speedometer-outline',
-        };
-        const iconName = nameMap[route.name] || 'ellipse-outline';
-        return Ionicons ? <Ionicons name={iconName} size={size} color={color} /> : <Text>●</Text>;
-      },
+          const nameMap: Record<string, string> = {
+            Inicio: 'home-outline',
+            Tramites: 'documents-outline',
+            MisTurnos: 'calendar-outline',
+            Feriados: 'flag-outline',
+            Perfil: 'person-circle-outline',
+            Panel: 'speedometer-outline',
+          };
+          const iconName = nameMap[route.name] || 'ellipse-outline';
+          return Ionicons ? <Ionicons name={iconName} size={size} color={color} /> : <Text>●</Text>;
+        },
       })}
     >
       <Tab.Screen name="Inicio" component={HomeStack} options={{ headerShown: false }} />

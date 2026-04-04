@@ -28,8 +28,10 @@ export default function TurnoCard({ turno, onCancel }: Props) {
 
   const role = user?.rol || 'CIUDADANO';
   const isOwner = !!(turno.propietarioId && user && String(turno.propietarioId) === String(user.id));
-  const canModify = role === 'FUNCIONARIO' ? true : isOwner;
-  const canCancel = role === 'FUNCIONARIO' ? true : isOwner && isBeforeTurno();
+  // Solo el propietario (ciudadano) puede editar/modificar datos del turno desde la UI.
+  const canModify = isOwner;
+  // Only funcionarios can cancel from the UI. Citizens cannot cancel turnos here.
+  const canCancel = role === 'FUNCIONARIO';
 
   const onCancelar = () => {
     if (!canCancel) {

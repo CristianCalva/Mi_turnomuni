@@ -13,6 +13,12 @@ async function post(url: string, payload: any, token?: string) {
   const contentType = res.headers.get('content-type') || '';
   const text = await res.text().catch(() => null);
 
+  if (res.status === 401 || res.status === 403) {
+    const err: any = new Error(res.status === 401 ? 'Unauthorized' : 'Forbidden');
+    err.status = res.status;
+    throw err;
+  }
+
   return {
     ok: res.ok,
     status: res.status,
@@ -58,6 +64,11 @@ export const getTurnos = async (token?: string) => {
       const res = await fetch(url, { headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
       const text = await res.text().catch(() => null);
       const contentType = res.headers.get('content-type') || '';
+      if (res.status === 401 || res.status === 403) {
+        const err: any = new Error(res.status === 401 ? 'Unauthorized' : 'Forbidden');
+        err.status = res.status;
+        throw err;
+      }
       attempts.push({ url, ok: res.ok, status: res.status, contentType, textPreview: (text || '').slice(0, 300) });
       if (res.ok) {
         if (contentType.includes('application/json')) return JSON.parse(text || '[]');
@@ -89,6 +100,11 @@ export const cancelarTurnoApi = async (id: string, token?: string) => {
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: c.body ? JSON.stringify(c.body) : undefined,
       });
+      if (res.status === 401 || res.status === 403) {
+        const err: any = new Error(res.status === 401 ? 'Unauthorized' : 'Forbidden');
+        err.status = res.status;
+        throw err;
+      }
       const text = await res.text().catch(() => null);
       attempts.push({ url: c.url, method: c.method, ok: res.ok, status: res.status, textPreview: (text || '').slice(0, 300) });
       if (res.ok) return true;
@@ -118,6 +134,11 @@ export const updateTurnoApi = async (id: string, payload: any, token?: string) =
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify(payload),
       });
+      if (res.status === 401 || res.status === 403) {
+        const err: any = new Error(res.status === 401 ? 'Unauthorized' : 'Forbidden');
+        err.status = res.status;
+        throw err;
+      }
       const text = await res.text().catch(() => null);
       const ct = res.headers.get('content-type') || '';
       attempts.push({ url: c.url, method: c.method, ok: res.ok, status: res.status, contentType: ct, textPreview: (text || '').slice(0, 300) });

@@ -70,6 +70,8 @@ export default function RegisterScreen() {
       }
 
       const data = await register(cedula, nombre, email, password, rol, telefono);
+      // Ensure the returned user keeps the selected role if backend didn't include it
+      if (data && data.user && !data.user.rol) data.user.rol = rol;
       Alert.alert('Éxito', 'Cuenta creada correctamente', [
         { text: 'OK', onPress: () => storeLogin(data.token, data.user) },
       ]);

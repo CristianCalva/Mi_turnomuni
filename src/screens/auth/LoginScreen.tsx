@@ -51,7 +51,30 @@ export default function LoginScreen() {
 
     try {
       const data = await login(email, password);
-      storeLogin(data.token, data.user);
+      // eslint-disable-next-line no-console
+      console.log('[DEBUG] login response:', data);
+      let user = data.user;
+      // If backend didn't return user but returned token, fetch profile
+      if ((!user || !user.rol) && data?.token) {
+        try {
+          // lazy import to avoid cycle
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const { fetchProfile } = require('../../services/authService');
+          const prof = await fetchProfile(data.token);
+          if (prof) user = prof;
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      if (!user) throw new Error('No se pudo obtener la información del usuario tras el login');
+
+      // Ensure role exists
+      if (!user.rol) user.rol = 'CIUDADANO';
+
+      storeLogin(data.token, user);
+      // eslint-disable-next-line no-console
+      console.log('[DEBUG] stored user after login:', useAuthStore.getState().user);
       setServerError(null);
     } catch (e: any) {
       // show server error near form (general) and keep Alert for visibility

@@ -13,7 +13,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Mi_TurnoMuni necesita acceso a la cámara para capturar documentos de tus trámites municipales",
+        "NSPhotoLibraryUsageDescription": "Mi_TurnoMuni necesita acceso a la galería para seleccionar documentos de tus trámites"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +25,16 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "package": "com.anonymous.Mi_TurnoMuni"
     },
     "web": {
       "favicon": "./assets/favicon.png"

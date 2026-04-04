@@ -4,6 +4,7 @@ import { styles } from '../../theme/styles';
 import { useTurnosStore, Turno } from '../../stores/turnosStore';
 import { useAuthStore } from '../../stores/authStore';
 import { getTurnos, updateTurnoApi, cancelarTurnoApi } from '../../services/turnosService';
+import useRequireRole from '../../utils/useRequireRole';
 
 const REASONS = [
   'Cierre de oficina',
@@ -14,6 +15,8 @@ const REASONS = [
 
 export default function FuncionarioDashboardScreen() {
   const user = useAuthStore((s) => s.user);
+  // Asegurar que sólo funcionarios acceden a este screen
+  useRequireRole('FUNCIONARIO', { redirectTo: 'Home' });
   const { turnos, actualizarTurno } = useTurnosStore();
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Turno | null>(null);

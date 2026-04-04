@@ -5,11 +5,13 @@ import { categorias } from '../../data/tramites';
 import { styles } from '../../theme/styles';
 import TramiteCard from '../../components/TramiteCard';
 import { useAuthStore } from '../../stores/authStore';
+import { Alert } from 'react-native';
 import { navigateOrAuth } from '../../utils/authNavigation';
 
 export default function TramitesScreen() {
   const navigation = useNavigation<any>();
   const isAuthenticated = useAuthStore(state => state.isAuthenticated);
+  const currentUser = useAuthStore(state => state.user);
 
   return (
     <View style={styles.container}>
@@ -20,7 +22,14 @@ export default function TramitesScreen() {
           <TramiteCard
             nombre={item.nombre}
             icon={item.icon}
-            onPress={() => navigateOrAuth(navigation, isAuthenticated, 'AgendarTurno', { tramite: item })}
+            onPress={() => {
+              // Solo CIUDADANO puede agendar turnos
+              if (currentUser && currentUser.rol === 'FUNCIONARIO') {
+                Alert.alert('No permitido', 'Los funcionarios no pueden agendar turnos desde la aplicación.');
+                return;
+              }
+              navigateOrAuth(navigation, isAuthenticated, 'AgendarTurno', { tramite: item });
+            }}
           />
         )}
         renderSectionHeader={({ section: { title } }) => (

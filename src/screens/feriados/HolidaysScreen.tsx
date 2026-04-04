@@ -93,7 +93,7 @@ const HolidaysScreen: React.FC = () => {
       <View style={styles.header}>
         <Text style={styles.title}>📅 Feriados Ecuador 2026</Text>
         <Text style={styles.subtitle}>
-          {holidays.length} días festivos • Mi_Appmovil
+          {holidays.length} días festivos 
         </Text>
       </View>
 
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   },
   dateContainer: {
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#0066cc', borderRadius: 8,
+    backgroundColor: '#4189d2', borderRadius: 8,
     width: 50, height: 50, marginRight: 12
   },
   date: { color: '#fff', fontSize: 18, fontWeight: 'bold' },

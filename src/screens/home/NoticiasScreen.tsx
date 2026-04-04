@@ -39,8 +39,8 @@ export default function NoticiasScreen() {
             <Text style={{ marginTop: 8, color: '#444' }}>{item.summary}</Text>
             <View style={{ marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <Text style={{ fontSize: 12, color: colors.primary, fontWeight: '700' }}>{item.category}</Text>
-              <TouchableOpacity style={styles.secondaryButtonGreen as any} onPress={() => onShare(item)}>
-                <Text style={styles.secondaryButtonText}>Compartir</Text>
+              <TouchableOpacity style={styles.inlineActionButton as any} onPress={() => onShare(item)}>
+                <Text style={styles.inlineActionText}>Compartir</Text>
               </TouchableOpacity>
             </View>
           </View>

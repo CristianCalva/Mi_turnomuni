@@ -138,6 +138,21 @@ export const styles = StyleSheet.create({
     color: colors.white,
     fontWeight: '700',
   },
+  // botón pequeño para acciones inline (ej. compartir en tarjetas)
+  inlineActionButton: {
+    backgroundColor: colors.secondary,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 80,
+  },
+  inlineActionText: {
+    color: colors.white,
+    fontWeight: '700',
+    fontSize: 13,
+  },
   dashboardTile: {
     backgroundColor: '#eef6ff',
     padding: 16,
@@ -404,4 +419,24 @@ export const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
+  // 🆕 Botón para adjuntar documento
+attachDocumentButton: {
+  backgroundColor: '#0066cc',
+  paddingVertical: 12,
+  paddingHorizontal: 20,
+  borderRadius: 10,
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 12,
+},
+attachDocumentButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+},
+attachDocumentButtonIcon: {
+  marginRight: 8,
+  fontSize: 16,
+},
 });

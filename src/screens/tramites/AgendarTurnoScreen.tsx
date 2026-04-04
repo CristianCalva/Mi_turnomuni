@@ -74,6 +74,17 @@ export default function AgendarTurnoScreen() {
     }
   }, [editTurnoId]);
 
+  useEffect(() => {
+    // Política: solo CIUDADANO puede crear nuevos turnos desde la UI.
+    if (!editTurnoId && currentUser && currentUser.rol === 'FUNCIONARIO') {
+      // DEBUG
+      // eslint-disable-next-line no-console
+      console.log('[DEBUG] AgendarTurnoScreen currentUser:', currentUser);
+      Alert.alert('No permitido', 'Los funcionarios no pueden agendar turnos desde esta pantalla.');
+      navigation.goBack?.();
+    }
+  }, [currentUser, editTurnoId]);
+
   const onChangeDate = (_: any, date?: Date) => {
     setShowDatePicker(false);
     if (date) setSelectedDate(date);
@@ -100,7 +111,12 @@ export default function AgendarTurnoScreen() {
         Alert.alert('Éxito', 'Turno actualizado correctamente');
         navigation.navigate('MisTurnos');
       } else {
-        const res = await crearTurno(payload, token || undefined);
+        // attach ciudadano info to payload so backend stores name/cedula when available
+        const ciudadanoCedula = (currentUser as any)?.cedula || (currentUser as any)?.ci || (currentUser as any)?.dni || undefined;
+        const ciudadanoNombre = currentUser?.nombre;
+        const payloadWithCitizen = { ...payload, ciudadanoNombre, ciudadanoCedula };
+
+        const res = await crearTurno(payloadWithCitizen, token || undefined);
 
         const turnoLocal = {
           id: (res && (res.id || Date.now().toString())) as string,
@@ -108,6 +124,8 @@ export default function AgendarTurnoScreen() {
           fecha: payload.fecha,
           hora: selectedHora,
           propietarioId: currentUser?.id,
+          ciudadanoNombre: ciudadanoNombre,
+          ciudadanoCedula: ciudadanoCedula,
         };
         agregarTurno(turnoLocal);
 
